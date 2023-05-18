@@ -25,6 +25,15 @@ import java.util.Map;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.function.Consumer;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import io.airbyte.integrations.destination.jdbc.JdbcBufferedConsumerFactory;
+import io.airbyte.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
 
 public class ClickhouseDestination extends AbstractJdbcDestination implements Destination {
 
@@ -34,10 +43,13 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   public static final String HTTPS_PROTOCOL = "https";
   public static final String HTTP_PROTOCOL = "http";
+  // Create an extra SqlOperations object because the one in the superclass is
+  // private and we need to access it
+  private final ClickhouseSqlOperations configurableSqlOperations;
 
   static final List<String> SSL_PARAMETERS = ImmutableList.of(
       "socket_timeout=3000000",
-      "sslmode=NONE");
+      "ssl=true");
   static final List<String> DEFAULT_PARAMETERS = ImmutableList.of(
       "socket_timeout=3000000");
 
@@ -47,6 +59,12 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   public ClickhouseDestination() {
     super(DRIVER_CLASS, new ClickhouseSQLNameTransformer(), new ClickhouseSqlOperations());
+    configurableSqlOperations = new ClickhouseSqlOperations();
+  }
+
+  @Override
+  protected SqlOperations getSqlOperations() {
+    return configurableSqlOperations;
   }
 
   @Override
@@ -87,7 +105,8 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
       final JdbcDatabase database = getDatabase(dataSource);
       final NamingConventionTransformer namingResolver = getNamingResolver();
       final String outputSchema = namingResolver.getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, getSqlOperations());
+      configurableSqlOperations.setConfig(ClickhouseDestinationConfig.get(config));
+      attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, configurableSqlOperations);
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
@@ -101,6 +120,16 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
         LOGGER.warn("Unable to close data source.", e);
       }
     }
+  }
+
+  @Override
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+    configurableSqlOperations.setConfig(ClickhouseDestinationConfig.get(config));
+    return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(getDataSource(config)),
+        configurableSqlOperations, getNamingResolver(), config,
+        catalog);
   }
 
   @Override

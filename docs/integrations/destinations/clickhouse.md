@@ -44,7 +44,7 @@ You need a ClickHouse user with the following permissions:
 You can create such a user by running:
 
 ```
-GRANT CREATE ON * TO airbyte_user;
+GRANT SELECT, INSERT, ALTER, CREATE DATABASE, CREATE TABLE, DROP TABLE, TRUNCATE ON database.* TO airbyte_user;
 ```
 
 You can also use a pre-existing user but we highly recommend creating a dedicated user for Airbyte.
@@ -62,7 +62,7 @@ You should now have all the requirements needed to configure ClickHouse as a des
 * **Username**
 * **Password**
 * **Database**
-* **Jdbc_url_params**
+* **Engine** (default `MergeTree`)
 
 ## Naming Conventions
 
