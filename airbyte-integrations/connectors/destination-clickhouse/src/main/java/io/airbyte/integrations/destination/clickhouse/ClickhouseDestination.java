@@ -49,7 +49,7 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   static final List<String> SSL_PARAMETERS = ImmutableList.of(
       "socket_timeout=3000000",
-      "ssl=true");
+      "sslmode=NONE");
   static final List<String> DEFAULT_PARAMETERS = ImmutableList.of(
       "socket_timeout=3000000");
 

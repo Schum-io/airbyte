@@ -35,7 +35,7 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
   public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
     StringBuilder query = new StringBuilder("CREATE DATABASE IF NOT EXISTS ${schema}");
     if (config.deploy_config().type().equals("self-hosted-cluster")) {
-      query.append(" ON CLUSTER '${cluster}'");
+      query.append(" ON CLUSTER ${cluster}");
     }
     query.append(";\n");
 
