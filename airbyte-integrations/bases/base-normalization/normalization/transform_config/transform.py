@@ -30,7 +30,11 @@ class TransformConfig:
         parser = argparse.ArgumentParser(add_help=False)
         parser.add_argument("--config", type=str, required=True, help="path to original config")
         parser.add_argument(
-            "--integration-type", type=DestinationType, choices=list(DestinationType), required=True, help="type of integration"
+            "--integration-type",
+            type=DestinationType,
+            choices=list(DestinationType),
+            required=True,
+            help="type of integration",
         )
         parser.add_argument("--out", type=str, required=True, help="path to output transformed config to")
 
@@ -112,7 +116,9 @@ class TransformConfig:
         return port_to_check
 
     @staticmethod
-    def get_ssh_altered_config(config: Dict[str, Any], port_key: str = "port", host_key: str = "host") -> Dict[str, Any]:
+    def get_ssh_altered_config(
+        config: Dict[str, Any], port_key: str = "port", host_key: str = "host"
+    ) -> Dict[str, Any]:
         """
         This should be called only if ssh tunneling is on.
         It will return config with appropriately altered port and host values
@@ -188,7 +194,9 @@ class TransformConfig:
                 dbt_config["sslrootcert"] = TransformConfig.create_file("ca.crt", ssl_mode["ca_certificate"])
                 dbt_config["sslcert"] = TransformConfig.create_file("client.crt", ssl_mode["client_certificate"])
                 client_key = TransformConfig.create_file("client.key", ssl_mode["client_key"])
-                subprocess.call("openssl pkcs8 -topk8 -inform PEM -in client.key -outform DER -out client.pk8 -nocrypt", shell=True)
+                subprocess.call(
+                    "openssl pkcs8 -topk8 -inform PEM -in client.key -outform DER -out client.pk8 -nocrypt", shell=True
+                )
                 dbt_config["sslkey"] = client_key.replace("client.key", "client.pk8")
 
         return dbt_config
@@ -316,6 +324,13 @@ class TransformConfig:
     @staticmethod
     def transform_clickhouse(config: Dict[str, Any]):
         print("transform_clickhouse")
+
+        cluster = ""
+        deploy_type = config.get("deploy_type")
+        is_cluster_mode = deploy_type["deploy_type"] == "self-hosted-cluster"
+        if is_cluster_mode:
+            cluster = deploy_type["cluster"]
+
         # https://docs.getdbt.com/reference/warehouse-profiles/clickhouse-profile
         dbt_config = {
             "type": "clickhouse",
@@ -325,6 +340,8 @@ class TransformConfig:
             "port": config["port"],
             "schema": config["database"],
             "user": config["username"],
+            "cluster": cluster,
+            "cluster_mode": is_cluster_mode
         }
         if "password" in config:
             dbt_config["password"] = config["password"]

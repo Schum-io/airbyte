@@ -14,7 +14,6 @@
       "database",
       "username",
       "engine",
-      "ssl_mode",
       "ssl",
       "deploy_type"
     ],
@@ -67,49 +66,6 @@
         "type": "boolean",
         "default": false,
         "order": 6
-      },
-      "ssl_mode": {
-        "title": "SSL verification mode",
-        "description": "Select the method of server SSL certificate verification.",
-        "type": "object",
-        "order": 7,
-        "oneOf": [
-          {
-            "title": "none",
-            "description": "Disable SSL verification.",
-            "required": ["mode"],
-            "properties": {
-              "mode": {
-                "type": "string",
-                "const": "none",
-                "enum": ["none"],
-                "default": "none",
-                "order": 0
-              }
-            }
-          },
-          {
-            "title": "strict",
-            "description": "Strict verification of server certificate (recommended).",
-            "required": ["mode"],
-            "properties": {
-              "mode": {
-                "type": "string",
-                "const": "strict",
-                "enum": ["strict"],
-                "default": "strict",
-                "order": 0
-              },
-              "ca_certificate": {
-                "type": "string",
-                "title": "CA certificate",
-                "description": "If you leave this empty, the default certificate bundle is used.",
-                "multiline": true,
-                "order": 1
-              }
-            }
-          }
-        ]
       },
       "engine": {
         "title": "Engine",

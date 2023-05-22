@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-VERSION=${VERSION:-0.0.7}
+VERSION=${VERSION:-0.0.8}
 REGISTRY=${REGISTRY:-shodanio/airbyte-destination-clickhouse-replication:$VERSION}
 
-../../../gradlew :airbyte-integrations:connectors:destination-clickhouse:build
+#../../../gradlew :airbyte-integrations:connectors:destination-clickhouse:build
 docker image tag airbyte/destination-clickhouse:dev $REGISTRY
 docker push $REGISTRY
 

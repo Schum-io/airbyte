@@ -12,28 +12,28 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.integrations.destination.jdbc.JdbcBufferedConsumerFactory;
+import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import javax.sql.DataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import java.util.function.Consumer;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
-import io.airbyte.integrations.destination.jdbc.JdbcBufferedConsumerFactory;
-import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+import javax.sql.DataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ClickhouseDestination extends AbstractJdbcDestination implements Destination {
 
@@ -43,6 +43,7 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   public static final String HTTPS_PROTOCOL = "https";
   public static final String HTTP_PROTOCOL = "http";
+
   // Create an extra SqlOperations object because the one in the superclass is
   // private and we need to access it
   private final ClickhouseSqlOperations configurableSqlOperations;
@@ -106,6 +107,7 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
       final NamingConventionTransformer namingResolver = getNamingResolver();
       final String outputSchema = namingResolver.getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
       configurableSqlOperations.setConfig(ClickhouseDestinationConfig.get(config));
+
       attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, configurableSqlOperations);
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {

@@ -448,6 +448,8 @@ class TestTransformConfig:
             "user": "ch",
             "password": "password1234",
             "secure": True,
+            "cluster_mode": True,
+            "cluster": "'{cluster}'",
         }
 
         assert expected == actual
