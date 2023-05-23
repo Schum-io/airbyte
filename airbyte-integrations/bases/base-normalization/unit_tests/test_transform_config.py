@@ -435,7 +435,21 @@ class TestTransformConfig:
         assert extract_schema(actual) == "my_db"
 
     def test_transform_clickhouse(self):
-        input = {"host": "airbyte.io", "port": 9440, "database": "default", "username": "ch", "password": "password1234", "ssl": True}
+        input = {
+            "host": "airbyte.io",
+            "port": 9440,
+            "database": "default",
+            "username": "ch",
+            "password": "password1234",
+            "ssl": True,
+            "engine": "MergeTree",
+            "deploy_type": {
+                "deploy_type": "self-hosted-cluster",
+                "cluster": "{cluster}",
+            },
+            "cluster_mode": True,
+            "check_exchange": False,
+        }
 
         actual = TransformConfig().transform_clickhouse(input)
         expected = {
@@ -448,8 +462,10 @@ class TestTransformConfig:
             "user": "ch",
             "password": "password1234",
             "secure": True,
+            "engine": "MergeTree",
+            "cluster": "{cluster}",
             "cluster_mode": True,
-            "cluster": "'{cluster}'",
+            "check_exchange": False,
         }
 
         assert expected == actual

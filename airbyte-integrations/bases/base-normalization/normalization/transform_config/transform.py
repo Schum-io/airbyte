@@ -116,9 +116,7 @@ class TransformConfig:
         return port_to_check
 
     @staticmethod
-    def get_ssh_altered_config(
-        config: Dict[str, Any], port_key: str = "port", host_key: str = "host"
-    ) -> Dict[str, Any]:
+    def get_ssh_altered_config(config: Dict[str, Any], port_key: str = "port", host_key: str = "host") -> Dict[str, Any]:
         """
         This should be called only if ssh tunneling is on.
         It will return config with appropriately altered port and host values
@@ -194,9 +192,7 @@ class TransformConfig:
                 dbt_config["sslrootcert"] = TransformConfig.create_file("ca.crt", ssl_mode["ca_certificate"])
                 dbt_config["sslcert"] = TransformConfig.create_file("client.crt", ssl_mode["client_certificate"])
                 client_key = TransformConfig.create_file("client.key", ssl_mode["client_key"])
-                subprocess.call(
-                    "openssl pkcs8 -topk8 -inform PEM -in client.key -outform DER -out client.pk8 -nocrypt", shell=True
-                )
+                subprocess.call("openssl pkcs8 -topk8 -inform PEM -in client.key -outform DER -out client.pk8 -nocrypt", shell=True)
                 dbt_config["sslkey"] = client_key.replace("client.key", "client.pk8")
 
         return dbt_config
@@ -346,7 +342,7 @@ class TransformConfig:
             "cluster": cluster,
             "cluster_mode": is_cluster_mode,
             "engine": engine,
-            "check_exchange": False
+            "check_exchange": False,
         }
         if "password" in config:
             dbt_config["password"] = config["password"]
