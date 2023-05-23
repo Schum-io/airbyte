@@ -345,7 +345,8 @@ class TransformConfig:
             "user": config["username"],
             "cluster": cluster,
             "cluster_mode": is_cluster_mode,
-            "engine": engine
+            "engine": engine,
+            "check_exchange": False
         }
         if "password" in config:
             dbt_config["password"] = config["password"]
