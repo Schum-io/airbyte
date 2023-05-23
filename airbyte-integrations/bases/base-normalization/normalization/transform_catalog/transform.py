@@ -38,12 +38,17 @@ python3 main_dev_transform_catalog.py \
     def parse(self, args) -> None:
         parser = argparse.ArgumentParser(add_help=False)
         parser.add_argument("--integration-type", type=str, required=True, help="type of integration dialect to use")
-        parser.add_argument("--profile-config-dir", type=str, required=True, help="path to directory containing DBT profiles.yml")
+        parser.add_argument(
+            "--profile-config-dir", type=str, required=True, help="path to directory containing DBT profiles.yml"
+        )
         parser.add_argument("--catalog", nargs="+", type=str, required=True, help="path to Catalog (JSON Schema) file")
         parser.add_argument("--out", type=str, required=True, help="path to output generated DBT Models to")
-        parser.add_argument("--json-column", type=str, required=False, help="name of the column containing the json blob")
+        parser.add_argument(
+            "--json-column", type=str, required=False, help="name of the column containing the json blob"
+        )
         parsed_args = parser.parse_args(args)
         profiles_yml = read_profiles_yml(parsed_args.profile_config_dir)
+
         self.config = {
             "integration_type": parsed_args.integration_type,
             "schema": extract_schema(profiles_yml),
@@ -52,6 +57,10 @@ python3 main_dev_transform_catalog.py \
             "json_column": parsed_args.json_column,
             "profile_config_dir": parsed_args.profile_config_dir,
         }
+
+        # for support clickhouse normalization Replicated* Engine for self-hosted-cluster
+        if parsed_args.integration_type == "clickhouse":
+            self.config["engine"] = profiles_yml.get("engine")
 
     def process_catalog(self) -> None:
         destination_type = DestinationType.from_string(self.config["integration_type"])
@@ -62,12 +71,18 @@ python3 main_dev_transform_catalog.py \
         for catalog_file in self.config["catalog"]:
             print(f"Processing {catalog_file}...")
             processor.process(catalog_file=catalog_file, json_column_name=json_col, default_schema=schema)
-        self.update_dbt_project_vars(json_column=self.config["json_column"], models_to_source=processor.models_to_source)
+        self.update_dbt_project_vars(
+            json_column=self.config["json_column"], models_to_source=processor.models_to_source
+        )
 
     def update_dbt_project_vars(self, **vars_config: Dict[str, Any]):
         filename = os.path.join(self.config["profile_config_dir"], self.DBT_PROJECT)
         config = read_yaml_config(filename)
         config["vars"] = {**config.get("vars", {}), **vars_config}
+
+        if self.config.get("engine"):
+            config["models"]["airbyte_utils"]["+engine"] = self.config.get("engine")
+
         write_yaml_config(config, filename)
 
 

@@ -528,7 +528,7 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
     },
     "destination-clickhouse": {
         "dockerfile": "clickhouse.Dockerfile",
-        "dbt_adapter": "dbt-clickhouse>=1.4.1",
+        "dbt_adapter": "dbt-clickhouse>=1.4.0",
         "integration_name": "clickhouse",
         "supports_in_connector_normalization": False,
     },

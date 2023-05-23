@@ -326,10 +326,13 @@ class TransformConfig:
         print("transform_clickhouse")
 
         cluster = ""
+        engine = config.get("engine")
         deploy_type = config.get("deploy_type")
         is_cluster_mode = deploy_type["deploy_type"] == "self-hosted-cluster"
         if is_cluster_mode:
             cluster = deploy_type["cluster"]
+            if deploy_type.get("replication"):
+                engine = f"Replicated{engine}"
 
         # https://docs.getdbt.com/reference/warehouse-profiles/clickhouse-profile
         dbt_config = {
@@ -341,7 +344,8 @@ class TransformConfig:
             "schema": config["database"],
             "user": config["username"],
             "cluster": cluster,
-            "cluster_mode": is_cluster_mode
+            "cluster_mode": is_cluster_mode,
+            "engine": engine
         }
         if "password" in config:
             dbt_config["password"] = config["password"]
