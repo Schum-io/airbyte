@@ -330,7 +330,7 @@ class TransformConfig:
             if deploy_type.get("replication"):
                 engine = f"Replicated{engine}"
 
-        # https://docs.getdbt.com/reference/warehouse-profiles/clickhouse-profile
+        # https://docs.getdbt.com/reference/warehouse-setups/clickhouse-setup
         dbt_config = {
             "type": "clickhouse",
             "driver": "http",
@@ -342,7 +342,9 @@ class TransformConfig:
             "cluster": cluster,
             "cluster_mode": is_cluster_mode,
             "engine": engine,
+            "database_engine": 'Atomic',
             "check_exchange": False,
+            "use_lw_deletes": True,
         }
         if "password" in config:
             dbt_config["password"] = config["password"]

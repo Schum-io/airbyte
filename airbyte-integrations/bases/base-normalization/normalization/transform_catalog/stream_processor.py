@@ -1194,9 +1194,9 @@ where 1 = 1
                 clickhouse_nullable_join_setting = ""
                 if self.destination_type == DestinationType.CLICKHOUSE:
                     # Clickhouse has special delete syntax
-                    delete_statement = "alter table {{ final_table_relation }} delete"
+                    delete_statement = "delete from {{ final_table_relation }} "
                     unique_key_reference = self.get_unique_key(in_jinja=False)
-                    noop_delete_statement = "alter table {{ this }} delete where 1=0"
+                    noop_delete_statement = "delete from {{ this }} where 1=0"
                     # Without this, our LEFT JOIN would return empty string for non-matching rows, so our COUNT would include those rows.
                     # We want to exclude them (this is the default behavior in other DBs) so we have to set join_use_nulls=1
                     clickhouse_nullable_join_setting = "SETTINGS join_use_nulls=1"
@@ -1283,6 +1283,9 @@ where 1 = 1
                     hooks.append(
                         f"delete from {stg_schema}.{stg_table} where {self.airbyte_emitted_at} != (select max({self.airbyte_emitted_at}) from {stg_schema}.{stg_table})",
                     )
+                elif self.destination_type.value == DestinationType.CLICKHOUSE.value:
+                    on_cluster = "ON CLUSTER '{cluster}'"
+                    hooks.append(f"drop view {stg_schema}.{stg_table} {on_cluster}")
                 else:
                     hooks.append(f"drop view {stg_schema}.{stg_table}")
 
